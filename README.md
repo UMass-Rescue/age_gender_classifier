@@ -2,19 +2,31 @@
 
 ### Installation
 
-Install `poetry`; using `pipx` on macOS as an example:
+Install `pipx` to manage `poetry`; this is recommended as it isolates Poetry in its own virtual environment, preventing conflicts with system-wide Python packages.
     
+    # macOS
+    brew update
     brew install pipx
     pipx ensurepath
 
+    # linux (debian)
+    sudo apt update
+    sudo apt install pipx
+    export PATH="$HOME/.local/bin:$PATH"
+
+    # alt, not recommended
+    python -m pip install --user pipx
+    python -m pipx ensurepath
+
+Restart or refresh your shell, install Poetry, and confirm.
+
+    source ~/.bashrc
+    which pipx
+
     pipx install poetry
-
-Refresh your source file, or open a new shell, and confirm installation.
-
-    source ~/.zshrc
     which poetry
 
-Set some configurations, create a virtual environment, and activate it. 
+Set configurations, create a virtual environment, and activate it. Note: use `poetry init` when starting a new project from scratch, use `poetry install` to set up dependencies from an existing lock file.
 
     poetry config virtualenvs.create true
     poetry config virtualenvs.in-project true
@@ -22,9 +34,19 @@ Set some configurations, create a virtual environment, and activate it.
     poetry install
     source .venv/bin/activate
 
-To install new packages use `poetry add <package_name>`
+To install or remove packages, respectively, use `poetry add` and `poetry remove`.
+
+    poetry add [--dev] <package_name>
+    poetry remove [--dev] <package_name>
 
 
+Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv.
+
+    export PYTHONPATH=$(pwd):$PYTHONPATH
+
+You are good to go!
+
+---
 
 ### Start the server
 
