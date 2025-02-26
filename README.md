@@ -2,17 +2,29 @@
 
 ### Installation
 
-Ensure pipenv is installed.
+Install `poetry`; using `pipx` on macOS as an example:
+    
+    brew install pipx
+    pipx ensurepath
 
-    pip install pipenv
+    pipx install poetry
 
-Activate the virtual environment.
+Refresh your source file, or open a new shell, and confirm installation.
 
-    pipenv shell
+    source ~/.zshrc
+    which poetry
 
-Install the dependencies.
+Set some configurations, create a virtual environment, and activate it. 
 
-    pipenv install
+    poetry config virtualenvs.create true
+    poetry config virtualenvs.in-project true
+
+    poetry install
+    source .venv/bin/activate
+
+To install new packages use `poetry add <package_name>`
+
+
 
 ### Start the server
 
