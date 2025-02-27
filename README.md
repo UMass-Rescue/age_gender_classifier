@@ -39,8 +39,7 @@ To install or remove packages, respectively, use `poetry add` and `poetry remove
     poetry add [--dev] <package_name>
     poetry remove [--dev] <package_name>
 
-
-Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv.
+Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv. And define environment variables in a `.env` file; follow `.env.sample`
 
     export PYTHONPATH=$(pwd):$PYTHONPATH
 
@@ -50,4 +49,4 @@ You are good to go!
 
 ### Start the server
 
-    python <TODO>
+    bash entrypoint.sh
