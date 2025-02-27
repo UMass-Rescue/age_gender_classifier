@@ -18,13 +18,13 @@ Install `pipx` to manage `poetry`; this is recommended as it isolates Poetry in 
     python -m pip install --user pipx
     python -m pipx ensurepath
 
-Restart or refresh your shell, install Poetry, and confirm.
+Restart or refresh your shell, install Poetry, and set desired version.
 
     source ~/.bashrc
     which pipx
 
     pipx install poetry
-    which poetry
+    poetry env use 3.11.1
 
 Set configurations, create a virtual environment, and activate it. Note: use `poetry init` when starting a new project from scratch, use `poetry install` to set up dependencies from an existing lock file.
 

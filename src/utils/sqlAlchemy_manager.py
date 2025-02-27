@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, ARRAY
+from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from typing import List, Optional
@@ -14,7 +14,6 @@ class User(Base):
     ethnicity = Column(Integer, nullable=True)
     gender = Column(Boolean, nullable=True)
     img_name = Column(String, nullable=True)
-    # pixels = Column(ARRAY(Integer), nullable=True)
     pixels = Column(String, nullable=True)
 
 

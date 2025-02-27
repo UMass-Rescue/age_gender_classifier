@@ -8,6 +8,7 @@ authors = [
     {name = "Jacob Sweet",email = "jdsweet@umass.edu"}
 ]
 readme = "README.md"
+
 requires-python = ">=3.11"
 dependencies = [
     "torch (>=2.6.0,<3.0.0)",
@@ -15,9 +16,14 @@ dependencies = [
     "pandas (>=2.2.3,<3.0.0)",
     "requests (>=2.32.3,<3.0.0)",
     "opencv-python (>=4.11.0.86,<5.0.0.0)",
-    "sqlalchemy (>=2.0.38,<3.0.0)"
+    "sqlalchemy (>=2.0.38,<3.0.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
 ]
 
+[tool.poetry]
+packages = [
+    { include = "server", from = "src" }
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -27,4 +33,6 @@ build-backend = "poetry.core.masonry.api"
 pytest = "^8.3.4"
 black = "^25.1.0"
 flake8 = "^7.1.2"
+ipython = "^8.32.0"
+ipykernel = "^6.29.5"
 
