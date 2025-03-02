@@ -3,8 +3,13 @@ from transformers import ViTImageProcessor, ViTForImageClassification
 import onnx
 
 
-# Load model and image processor
-model_name = "nateraw/vit-age-classifier"
+
+# Load model and image processor for selected model
+
+# model_name = "nateraw/vit-age-classifier"
+model_name = "cledoux42/Age_Classify_v001"
+output_name = "age_classifier_v001.onnx"
+
 model = ViTForImageClassification.from_pretrained(model_name)
 feature_extractor = ViTImageProcessor.from_pretrained(model_name)
 
@@ -16,7 +21,7 @@ image_size = feature_extractor.size["height"]  # Default: 224
 dummy_image = torch.randn(1, 3, image_size, image_size)
 
 # Convert to ONNX with updated opset version (14+)
-onnx_path = "vit_age_classifier.onnx"
+onnx_path = output_name
 torch.onnx.export(
     model,
     (dummy_image,),
