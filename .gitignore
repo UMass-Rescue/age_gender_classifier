@@ -170,4 +170,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+.DS_Store
 notebooks
+mounted_volume
+input_data/*.csv
