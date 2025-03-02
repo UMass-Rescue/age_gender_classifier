@@ -18,13 +18,13 @@ Install `pipx` to manage `poetry`; this is recommended as it isolates Poetry in 
     python -m pip install --user pipx
     python -m pipx ensurepath
 
-Restart or refresh your shell, install Poetry, and confirm.
+Restart or refresh your shell, install Poetry, and set desired version.
 
     source ~/.bashrc
     which pipx
 
     pipx install poetry
-    which poetry
+    poetry env use 3.11.1
 
 Set configurations, create a virtual environment, and activate it. Note: use `poetry init` when starting a new project from scratch, use `poetry install` to set up dependencies from an existing lock file.
 
@@ -39,8 +39,7 @@ To install or remove packages, respectively, use `poetry add` and `poetry remove
     poetry add [--dev] <package_name>
     poetry remove [--dev] <package_name>
 
-
-Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv.
+Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv. And define environment variables in a `.env` file; follow `.env.sample`
 
     export PYTHONPATH=$(pwd):$PYTHONPATH
 
@@ -50,4 +49,4 @@ You are good to go!
 
 ### Start the server
 
-    python <TODO>
+    bash entrypoint.sh
