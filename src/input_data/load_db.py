@@ -8,9 +8,12 @@ logging.basicConfig(level=logging.INFO)
 
 
 def read_csv_and_format(fileIn: str="age_gender.csv") -> pd.DataFrame:
-    "Read labeled data set, split pixels into array of int, return DataFrame"
+    "Read labeled data set and return DataFrame"
     path = Path(__file__).parent
-    return pd.read_csv(str(path / fileIn))
+    file = str(path / fileIn)
+    if not os.path.exists(file):
+        raise FileNotFoundError(f" File not found: {file}")
+    return pd.read_csv(file)
 
 
 def clean_load_to_db(df: pd.DataFrame, table_name: str="age_gender_labeled") -> None:
@@ -23,7 +26,7 @@ def clean_load_to_db(df: pd.DataFrame, table_name: str="age_gender_labeled") -> 
 
     df.to_sql(table_name, con=db.engine, if_exists="append", index=False)
     ct = pd.read_sql(f"SELECT COUNT(*) FROM {table_name}", con=db.engine).iloc[0, 0]
-    logging.info(f" Clean loaded data {ct} records into DB table {table_name}")
+    logging.info(f" Clean loaded {ct} records into DB table {table_name}")
 
 
 def main() -> None:
