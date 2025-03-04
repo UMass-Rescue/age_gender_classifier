@@ -19,10 +19,10 @@ def read_csv_and_format(fileIn: str="age_gender.csv") -> pd.DataFrame:
 def clean_load_to_db(df: pd.DataFrame, table_name: str="age_gender_labeled") -> None:
     """Connect to DB, create/truncate table, write df to table."""
     db_uri = os.getenv("DB_CONN_STR")
-    db = DBManager(db_uri)
+    db = DBManager(db_uri, table_name)
 
     db.create_table_if_not_exists()
-    db.truncate_table(table_name)
+    db.truncate_table()
 
     df.to_sql(table_name, con=db.engine, if_exists="append", index=False)
     ct = pd.read_sql(f"SELECT COUNT(*) FROM {table_name}", con=db.engine).iloc[0, 0]
