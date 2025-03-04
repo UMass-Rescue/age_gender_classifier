@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from typing import List, Optional
 
@@ -8,7 +9,7 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = 'age_gender_labeled'
+    __tablename__ = "age_gender_labeled"
     id = Column(Integer, primary_key=True, autoincrement=True)
     age = Column(Integer, nullable=True)
     ethnicity = Column(Integer, nullable=True)
@@ -107,3 +108,20 @@ class DBManager:
             session.delete(user)
             session.commit()
         session.close()
+
+    def truncate_table(self, table_name: str) -> None:
+        """Truncate the specified table.
+        
+        Args:
+            table_name (str): The name of the table to truncate.
+
+        This method removes all rows from the table and resets any auto-incrementing primary key.
+        """
+        session = self.Session()
+        try:
+            session.execute(text(f"DELETE FROM {table_name}"))
+            session.commit()
+        except Exception as e:
+            print(f"Error truncating table {table_name}:, {e}")
+        finally:
+            session.close()
