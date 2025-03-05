@@ -42,6 +42,7 @@ class DBManager:
         """
         self.engine = create_engine(db_url)
         self.Session = sessionmaker(bind=self.engine)
+
         if table_name not in defined_tables:
             raise ValueError(f"Table '{table_name}' is not recognized.")
         self.table = defined_tables[table_name]
@@ -59,8 +60,6 @@ class DBManager:
         session = self.Session()
         new_rec = self.table(**kwargs)
         session.add(new_rec)
-        session.commit()
-        session.close()
 
     def update_record(self, record_id: int, **kwargs) -> None:
         """Update an existing record in the specified table.
@@ -75,8 +74,6 @@ class DBManager:
             for key, value in kwargs.items():
                 if hasattr(rec, key):
                     setattr(rec, key, value)
-            session.commit()
-        session.close()
     
     def delete_user(self, record_id: int) -> None:
         """Delete a record from the specified table by ID.
@@ -88,8 +85,6 @@ class DBManager:
         rec = session.query(self.table).filter_by(id=record_id).first()
         if rec:
             session.delete(rec)
-            session.commit()
-        session.close()
 
     def truncate_table(self) -> None:
         """Truncate the specified table."""
@@ -99,5 +94,9 @@ class DBManager:
             session.commit()
         except Exception as e:
             print(f"Error truncating table {self.table.__tablename__}: {e}")
-        finally:
-            session.close()
+
+    def commit_and_close(self) -> None:
+        """Commit changes and close the session."""
+        session = self.Session()
+        session.commit()
+        session.close()
