@@ -173,4 +173,6 @@ cython_debug/
 .DS_Store
 notebooks
 mounted_volume
-input_data/*.csv
+src/input_data/*.csv
+
+*.db
