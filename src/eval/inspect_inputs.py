@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def age_histogram(df: pd.DataFrame, saveFile: str="imgs/age_distribution.png") -> None:
+    """"""
     sns.histplot(data=df,x='age',kde=True)
     path = Path(__file__).parent / saveFile
     plt.savefig(path)

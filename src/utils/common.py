@@ -12,7 +12,7 @@ def read_db(
         table_name: str="age_gender_labeled",
         query: Optional[str]=None
     ) -> pd.DataFrame:
-    """"""
+    """Read records from custom query into pandas DataFrame."""
     if query is None:
         logging.warning("No query provided. Returning None.")
         return None
@@ -23,6 +23,3 @@ def read_db(
 
     logging.info(f" Retrieved {len(df)} records from DB table {table_name}")
     return df
-
-
-# read_db()
