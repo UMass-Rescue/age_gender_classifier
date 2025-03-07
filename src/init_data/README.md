@@ -7,4 +7,4 @@ Download it from [here](https://www.kaggle.com/datasets/nipunarora8/age-gender-a
 
 Run the `load_db.py` file. This reads the downloaded CSV file, connects to the database, creates a new table if it does not exist, truncates the table, and writes the data.
 
-    poetry run python src/input_data/load_db.py
+    poetry run python src/init_data/load_db.py
