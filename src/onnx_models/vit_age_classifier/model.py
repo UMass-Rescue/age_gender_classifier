@@ -45,19 +45,15 @@ id2label = {
     8: "more than 70",
 }
 
-# Load ONNX model
-onnx_path = "vit_age_classifier.onnx"
-session = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
 
 # Run inference
-def predict(image_path):
+def predict(image_path, onnx_path):
+    # Load ONNX model
+    session = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
     input_tensor = preprocess_image(image_path)
     outputs = session.run(["logits"], {"pixel_values": input_tensor})[0]
-    predicted_classes, _ = postprocess_output(outputs)
-    predicted_label = id2label.get(predicted_classes[0], "Unknown")
-    return predicted_label
-
-# Example usage
-image_path = "testImages/man1.jpg"  # Change this to your image path
-label = predict(image_path)
-print(f"Predicted label: {label}")
+    predicted_classes, probabilities = postprocess_output(outputs)
+    predicted_class = predicted_classes[0]
+    predicted_label = id2label.get(predicted_class, "Unknown")
+    confidence = probabilities[0][predicted_class]
+    return predicted_label, confidence

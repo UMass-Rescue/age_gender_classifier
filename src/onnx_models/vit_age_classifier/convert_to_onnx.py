@@ -7,8 +7,11 @@ import onnx
 # Load model and image processor for selected model
 
 # model_name = "nateraw/vit-age-classifier"
+# output_name = "vit_age_classifier.onnx"
+
+
 model_name = "cledoux42/Age_Classify_v001"
-output_name = "age_classifier_v001.onnx"
+output_name = "vit_model.onnx"
 
 model = ViTForImageClassification.from_pretrained(model_name)
 feature_extractor = ViTImageProcessor.from_pretrained(model_name)
