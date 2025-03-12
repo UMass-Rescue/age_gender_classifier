@@ -25,7 +25,6 @@ def clean_load_to_db(df: pd.DataFrame, table_name: str="age_gender_labeled") -> 
     db.truncate_table()
 
     df.to_sql(table_name, con=db.engine, if_exists="append", index=False)
-    db.commit_and_close()
 
     ct = pd.read_sql(f"SELECT COUNT(*) FROM {table_name}", con=db.engine).iloc[0, 0]
     logging.info(f" Clean loaded {ct} records into DB table {table_name}")

@@ -12,8 +12,7 @@ import random
 from src.onnx_models.age_classify_v001.model import predict as predict_age_classifier
 from src.onnx_models.vit_age_classifier.model import predict as predict_vit_age_classifier
 
-from src.utils.sqlAlchemy_manager import DBManager
-from src.utils.common import write_db
+from src.utils.common import write_db, read_db
 
 logging.basicConfig(level=logging.INFO)
 
@@ -72,7 +71,7 @@ class SurveyModels:
         # Run the second model
         model2_label, model2_confidence = predict_vit_age_classifier(image_path, self.model2_path)
         
-        results = {
+        return  {
             "model_name": ["age_classify_v001", "vit_age_classifier"],
             "scores": [
                 {"label": model1_label, "confidence": str(model1_confidence)},
@@ -80,11 +79,6 @@ class SurveyModels:
             ],
             "created_at": [self.now, self.now]
         }
-        return results
-        # return {
-        #     "age_classify_v001": (model1_label, model1_confidence),
-        #     "vit_age_classifier": (model2_label, model2_confidence)
-        # }
 
     def predict_over_under(self, age, image_path):
         """
@@ -117,34 +111,32 @@ class SurveyModels:
                 ),
                 pred["scores"][n]["confidence"]
             )
-
-        # for model_name, (label, conf) in predictions.items():
-        #     binary_results[model_name] = (label_to_binary(label, age), conf)
         
         # Randomly choose one model's result for now
         chosen_model = random.choice(list(binary_results.keys()))
 
         return {
             "model_name": ["predict_over_under"],
-            "scores": [{chosen_model},
+            "scores": [{"chosen_model": chosen_model, "binanry_results": binary_results},
             ],
             "created_at": [self.now]
         }
-        # return binary_results[chosen_model]  # Returns (binary_value, confidence)
-    
 
-    def main_predict(self, images: List, age_threshhold: int=40) -> None:
-        """Loop list of images, run predicition on each and write results to db."""
+    def main_predict(self, images: List, age_threshold: int=40) -> pd.DataFrame:
+        """Loop list of images, for each, run prediction and write results to db."""
         counts = 0
         for img in images:
-            df = pd.DataFrame(self.predict(img))
+            df1 = pd.DataFrame(self.predict(img))
+            df2 = pd.DataFrame(self.predict_over_under(age_threshold, img))
+            dfs = [df1, df2]
+
+            df = pd.concat(dfs, axis=0)
             df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
-            # predict_over_under()
-            # ADD OVER/UNDER HERE, APPEND TO EXISTING DF
-            write_db(df, "model_output") 
+
+            write_db(df, "model_output")
             counts += 1 
-        
-        logging.info(f" Successfully completed predictions for {counts} images.")
+        logging.info(f" Successfully completed {len(dfs)} predictions for {counts} images.")
+        return df
 
 
 # Command Line Execution
@@ -174,16 +166,22 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # Full Model Predictions
-    predictions = survey.predict(image_path)
-    print(predictions)
-    print("\nModel Predictions:")
-    for x in predictions.items():
-        print(x)
+    # predictions = survey.predict(image_path)
+    
+    # print("\nModel Predictions:")
+    # print(predictions)
+    # for x in predictions.items():
+    #     print(x)
     # for model_name, (label, confidence) in predictions.items():
     #     print(f"{model_name}: {label} (confidence: {confidence:.2f})")
     
     # Over/Under Prediction for the specified age
     # binary_result, conf_result = survey.predict_over_under(age_threshold, image_path)
-    chose_model = survey.predict_over_under(age_threshold, image_path)
-    print(chose_model)
+    # chose_model = survey.predict_over_under(age_threshold, image_path)
+    # print(chose_model)
     # print(f"\nOver/Under {age_threshold}: {'Over' if binary_result else 'Under'} {age_threshold} (confidence: {conf_result:.2f})")
+    df = survey.main_predict([image_path], age_threshold=40)
+    df2 = read_db("model_output", "SELECT * FROM model_output")
+    
+    logging.info("Current run", df)
+    logging.info("Read DB", df2.head())

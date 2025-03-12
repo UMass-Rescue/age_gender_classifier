@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from typing import List, Optional
+import logging
 
 
 Base = declarative_base()
@@ -58,8 +59,15 @@ class DBManager:
             kwargs: Column values for the table.
         """
         session = self.Session()
-        new_rec = self.table(**kwargs)
-        session.add(new_rec)
+        try:
+            new_rec = self.table(**kwargs)
+            session.add(new_rec)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logging.error(f"Error inserting record: {e}")
+        finally:
+            session.close()
 
     def update_record(self, record_id: int, **kwargs) -> None:
         """Update an existing record in the specified table.
@@ -69,11 +77,18 @@ class DBManager:
             kwargs: Fields to update with new values.
         """
         session = self.Session()
-        rec = session.query(self.table).filter_by(id=record_id).first()
-        if rec:
-            for key, value in kwargs.items():
-                if hasattr(rec, key):
-                    setattr(rec, key, value)
+        try:
+            rec = session.query(self.table).filter_by(id=record_id).first()
+            if rec:
+                for key, value in kwargs.items():
+                    if hasattr(rec, key):
+                        setattr(rec, key, value)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            logging.error(f"Error updating record: {e}")
+        finally:
+            session.close()
     
     def delete_user(self, record_id: int) -> None:
         """Delete a record from the specified table by ID.
@@ -82,9 +97,16 @@ class DBManager:
             record_id (int): The ID of the record to delete.
         """
         session = self.Session()
-        rec = session.query(self.table).filter_by(id=record_id).first()
-        if rec:
-            session.delete(rec)
+        try:
+            rec = session.query(self.table).filter_by(id=record_id).first()
+            if rec:
+                session.delete(rec)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            logging.error(f"Error deleting record: {e}")
+        finally:
+            session.close()
 
     def truncate_table(self) -> None:
         """Truncate the specified table."""
@@ -93,10 +115,19 @@ class DBManager:
             session.execute(text(f"DELETE FROM {self.table.__tablename__}"))
             session.commit()
         except Exception as e:
-            print(f"Error truncating table {self.table.__tablename__}: {e}")
+            session.rollback()
+            logging.error(f"Error truncating table {self.table.__tablename__}: {e}")
+        finally:
+            session.close()
 
-    def commit_and_close(self) -> None:
-        """Commit changes and close the session."""
+    def drop_table(self, table: str) -> None:
+        """Drop specified table."""
         session = self.Session()
-        session.commit()
-        session.close()
+        try:
+            session.execute(text(f"DROP TABLE IF EXISTS {table}"))
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logging.error(f"Error dropping table {table}: {e}")
+        finally:
+            session.close()

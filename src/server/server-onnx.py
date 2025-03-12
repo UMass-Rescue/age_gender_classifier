@@ -65,12 +65,10 @@ def sentiment_detection(inputs: Inputs, parameters: Parameters) -> ResponseBody:
     out_path = Path(inputs["output_file"].path)
     files = [str(fpath) for fpath in input_path.iterdir() if fpath.is_file()]
 
-    results = models.predict(files)
+    df_results = models.main_predict(files, age_threshold=40)
 
-    # TODO: should this go to csv or into the DB?
-    results_path = out_path / "....csv"
-    # df = pd.json_normalize(results)
-    # df.to_csv(res_path, index=False)
+    results_path = out_path / "temp_output.csv"
+    df_results.to_csv(results_path, index=False)
 
     # import pdb; pdb.set_trace()
     return ResponseBody(FileResponse(path=str(results_path), file_type="csv"))
