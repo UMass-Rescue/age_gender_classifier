@@ -43,31 +43,17 @@ To install or remove packages, respectively, use `poetry add` and `poetry remove
     export PYTHONPATH=$(pwd):$PYTHONPATH
     set -a; source .env; set +a
 
-You are good to go!
+**Get the ONNX models**
 
----
+In order to run survey_models.py you must download the onnx model files from this GoogleDrive [link](https://drive.google.com/drive/folders/1IgG6w6lJ9cd8Qlckd7HwdBUjWCd_-gxN), then copy them in their respective directories.
 
-### Start the server
-    python <TODO>
-=======
-    TODO 
-    bash entrypoint.sh
+    cp ~/Downloads/v001_model.onnx src/onnx_models/age_classify_v001/v001_model.onnx 
+    cp ~/Downloads/vit_model.onnx src/onnx_models/vit_age_classifier/vit_model.onnx
 
+Alternatively, you could run the `convert_to_onnx.py` files in each directory to regenerate the respective ONNX files.
 
-
-Onnx models setup:
-
-In order to run survey_models.py you must download the onnx model files from this GoogleDrive link
-
-https://drive.google.com/drive/folders/1IgG6w6lJ9cd8Qlckd7HwdBUjWCd_-gxN
-
-v001_model.onnx goes in age_classify_v0001 directory
-vit_model.onnx goes in vit_age_classifier directory
-
-You can also run the convert_to_onnx.py files in each directory respectively instead, to regenerate the ONNX files.
-
-Your directory structure should then look like
-
+Your models directory structure should then look like this:
+```
 /onnx_models
 --/age_classify_v001
 ----convert_to_onnx.py
@@ -78,3 +64,17 @@ Your directory structure should then look like
 ----model.py
 ----vit_model.onnx
 --surey_models.py
+```
+
+
+You are good to go!
+
+---
+
+### Start the server
+    python <TODO>
+    TODO 
+    bash entrypoint.sh
+
+
+

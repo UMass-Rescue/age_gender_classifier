@@ -1,9 +1,8 @@
 from typing import TypedDict
 from pathlib import Path
-
 import pandas as pd
 
-# from src.model import ... TODO
+from src.onnx_models.survey_models import SurveyModels
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
 from flask_ml.flask_ml_server.models import (
@@ -45,7 +44,7 @@ class Parameters(TypedDict):
 
 
 
-# model = AgeClassifier() TODO
+models = SurveyModels()
 server = MLServer(__name__)
 
 server.add_app_metadata(
@@ -66,10 +65,10 @@ def sentiment_detection(inputs: Inputs, parameters: Parameters) -> ResponseBody:
     out_path = Path(inputs["output_file"].path)
     files = [str(fpath) for fpath in input_path.iterdir() if fpath.is_file()]
 
-    # results = model.batch_sentiment_detection(files) TODO
+    results = models.predict(files)
 
     # TODO: should this go to csv or into the DB?
-    results_path = out_path / "res_infer_fer_onnx.csv"
+    results_path = out_path / "....csv"
     # df = pd.json_normalize(results)
     # df.to_csv(res_path, index=False)
 

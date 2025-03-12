@@ -23,7 +23,7 @@ class ModelOutput(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     model_name = Column(String, nullable=False)
     scores = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=func.now())  # Auto-set current timestamp
+    created_at = Column(DateTime, nullable=False, default=func.now())
 
 
 defined_tables = {

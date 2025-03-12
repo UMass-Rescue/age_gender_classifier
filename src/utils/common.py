@@ -27,12 +27,12 @@ def read_db(
 
 def write_db(
         df: pd.DataFrame,
-        table_name: str="age_gender_labeled"
+        table_name: str="model_output"
     ) -> None:
-    """Write pandas DataFrame into DB table."""
+    """Write pandas DataFrame of model output into DB."""
 
     db = DBManager(db_uri, table_name)
-    df.to_sql(table_name, con=db.engine)
+    df.to_sql(table_name, con=db.engine, if_exists='append')
     db.commit_and_close()
 
     logging.info(f" Wrote {len(df)} records from DB table {table_name}")
