@@ -176,3 +176,4 @@ mounted_volume
 src/init_data/*.csv
 
 *.db
+*.onnx
