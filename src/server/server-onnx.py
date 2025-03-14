@@ -1,6 +1,5 @@
 from typing import TypedDict
 from pathlib import Path
-import pandas as pd
 
 from src.onnx_models.survey_models import SurveyModels
 
@@ -12,6 +11,8 @@ from flask_ml.flask_ml_server.models import (
     InputType,
     ResponseBody,
     TaskSchema,
+    ParameterSchema,
+    IntParameterDescriptor
 )
 
 
@@ -30,7 +31,12 @@ def create_transform_case_task_schema() -> TaskSchema:
         label="Path to the output file",
         input_type=InputType.DIRECTORY,
     )
-    return TaskSchema(inputs=[input_schema, output_schema], parameters=[])
+    param_schema = ParameterSchema(
+        key="age_threshold",
+        label="Age Threshold for Over/Under Prediction",
+        value=IntParameterDescriptor(default=20,)
+    )
+    return TaskSchema(inputs=[input_schema, output_schema], parameters=[param_schema])
 
 
 class Inputs(TypedDict):
@@ -40,11 +46,9 @@ class Inputs(TypedDict):
 
 
 class Parameters(TypedDict):
-    pass
+    age_threshold: int
 
 
-
-models = SurveyModels()
 server = MLServer(__name__)
 
 server.add_app_metadata(
@@ -59,18 +63,19 @@ server.add_app_metadata(
 def sentiment_detection(inputs: Inputs, parameters: Parameters) -> ResponseBody:
     """
     In Flask-ML, an inference function takes two arguments: inputs and parameters.
-    In Flask-ML, the types of inputs and parameters must be Python TypedDict types.
+    The types of inputs and parameters must be Python TypedDict types.
     """
     input_path = Path(inputs["input_dataset"].path)
     out_path = Path(inputs["output_file"].path)
     files = [str(fpath) for fpath in input_path.iterdir() if fpath.is_file()]
 
-    df_results = models.main_predict(files, age_threshold=40)
+    models = SurveyModels()
+    df_results = models.main_predict(files, age_threshold=parameters["age_threshold"])
 
-    results_path = out_path / "temp_output.csv"
+    of_name = f"rb_run_{models.now}.csv"
+    results_path = out_path / of_name
     df_results.to_csv(results_path, index=False)
 
-    # import pdb; pdb.set_trace()
     return ResponseBody(FileResponse(path=str(results_path), file_type="csv"))
 
 

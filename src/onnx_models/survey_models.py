@@ -42,11 +42,10 @@ def label_to_binary(label, threshold):
 
 class SurveyModels:
     def __init__(self):
-        # Hardcoded paths to the ONNX models
         self.base_path = Path(__file__).resolve().parent
         self.model1_path = str(self.base_path / "age_classify_v001/v001_model.onnx")
         self.model2_path = str(self.base_path / "vit_age_classifier/vit_model.onnx")
-        self.now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.now = datetime.now().isoformat()
 
         # Check if model files exist
         if not os.path.exists(self.model1_path):
