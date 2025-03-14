@@ -31,4 +31,4 @@ def write_db(
 
     db = DBManager(db_uri, table_name)
     df.to_sql(table_name, con=db.engine, if_exists='append', index=False)
-    logging.info(f" Wrote {len(df)} records from DB table {table_name}")
+    logging.info(f" Wrote {len(df)} records to DB table {table_name}")

@@ -177,3 +177,4 @@ src/init_data/*.csv
 
 *.db
 *.onnx
+rb_output/
