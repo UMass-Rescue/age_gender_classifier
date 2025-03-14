@@ -134,7 +134,7 @@ class SurveyModels:
 
             write_db(df, "model_output")
             counts += 1 
-        logging.info(f" Successfully completed {len(dfs)} predictions for {counts} images.")
+        logging.info(f" Successfully completed {len(df)} predictions for {counts} images.")
         return df
 
 
