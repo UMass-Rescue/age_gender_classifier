@@ -129,7 +129,7 @@ class SurveyModels:
             df2 = pd.DataFrame(self.predict_over_under(age_threshold, img))
             dfs = [df1, df2]
 
-            df = pd.concat(dfs, axis=0)
+            df = pd.concat(dfs, axis=0).reset_index(drop=True)
             df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
 
             write_db(df, "model_output")

@@ -30,5 +30,6 @@ def write_db(
     """Write pandas DataFrame of model output into DB."""
 
     db = DBManager(db_uri, table_name)
+    db.create_table_if_not_exists()
     df.to_sql(table_name, con=db.engine, if_exists='append', index=False)
     logging.info(f" Wrote {len(df)} records to DB table {table_name}")
