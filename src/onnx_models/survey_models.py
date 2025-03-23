@@ -11,6 +11,7 @@ import pandas as pd
 import random
 from src.onnx_models.age_classify_v001.model import predict as predict_age_classifier
 from src.onnx_models.vit_age_classifier.model import predict as predict_vit_age_classifier
+from src.onnx_models.fairface.model import predict as predict_fairface_classifier
 
 from src.utils.common import write_db, read_db
 
@@ -45,6 +46,7 @@ class SurveyModels:
         self.base_path = Path(__file__).resolve().parent
         self.model1_path = str(self.base_path / "age_classify_v001/v001_model.onnx")
         self.model2_path = str(self.base_path / "vit_age_classifier/vit_model.onnx")
+        self.model3_path = str(self.base_path / "fairface/fairface_age.onnx")
         self.now = datetime.now().isoformat()
 
         # Check if model files exist
@@ -52,6 +54,8 @@ class SurveyModels:
             raise FileNotFoundError(f"Model file not found: {self.model1_path}")
         if not os.path.exists(self.model2_path):
             raise FileNotFoundError(f"Model file not found: {self.model2_path}")
+        if not os.path.exists(self.model3_path):
+            raise FileNotFoundError(f"Model file not found: {self.model3_path}")
 
     def predict(self, image_path):
         """
@@ -70,10 +74,14 @@ class SurveyModels:
         # Run the second model
         model2_label, model2_confidence = predict_vit_age_classifier(image_path, self.model2_path)
         
+        # Run the third model
+        model3_label, model3_confidence = predict_fairface_classifier(image_path, self.model3_path)
+        
         return  {
-            "model_name": ["age_classify_v001", "vit_age_classifier"],
+            "model_name": ["age_classify_v001", "vit_age_classifier", "fairface_classifier"],
             "scores": [
                 {"label": model1_label, "confidence": str(model1_confidence)},
+                {"label": model2_label, "confidence": str(model2_confidence)},
                 {"label": model2_label, "confidence": str(model2_confidence)},
             ],
             "created_at": [self.now, self.now]
@@ -81,45 +89,51 @@ class SurveyModels:
 
     def predict_over_under(self, age, image_path):
         """
-        Poll (both, TODO add third) models and convert their age predictions into a binary over/under the specified {age} value.
-
-        Args:
-            age (int): The age threshold for the binary classification. Should be one of the following values: (3, 10, 20, 30, 40, 50, 60, 70).
-            image_path (str): Path to the input image.
+        Poll all 3 models and convert their age predictions into a binary over/under classification.
+        Use majority vote instead of random selection.
 
         Returns:
-            tuple: A tuple (binary_value, confidence) where:
-                - binary_value (bool) is True if "over {age}", False if "under {age}".
-                - confidence (float) is the confidence score of the chosen model.
-
-        Raises:
-            ValueError: If `age` is not one of the allowed threshold values.
+            dict with keys:
+                - model_name: ["predict_over_under"]
+                - scores: [{
+                    "majority_vote": majority_vote (bool),
+                    "binanry_results": {
+                        model_name: (bool, confidence), ...
+                    }
+                }]
+                - created_at: [timestamp]
         """
-        
         allowed_ages = {3, 10, 20, 30, 40, 50, 60, 70}
         if age not in allowed_ages:
             raise ValueError(f"Invalid age threshold: {age}. Allowed values are {sorted(allowed_ages)}.")
         
         pred = self.predict(image_path)
         binary_results = {}
+
+        # Count votes for each binary outcome
+        vote_counts = {True: 0, False: 0}
         
         for n in range(len(pred["model_name"])):
-            binary_results[pred["model_name"][n]] = (
-                label_to_binary(
-                    pred["scores"][n]["label"], age
-                ),
-                pred["scores"][n]["confidence"]
-            )
-        
-        # Randomly choose one model's result for now
-        chosen_model = random.choice(list(binary_results.keys()))
+            model_name = pred["model_name"][n]
+            label = pred["scores"][n]["label"]
+            conf = pred["scores"][n]["confidence"]
+            is_over = label_to_binary(label, age)
+
+            binary_results[model_name] = (is_over, conf)
+            vote_counts[is_over] += 1
+
+        # Majority vote for whether the picture is over the threshold
+        majority_vote = True if vote_counts[True] >= 2 else False
 
         return {
             "model_name": ["predict_over_under"],
-            "scores": [{"chosen_model": chosen_model, "binanry_results": binary_results},
-            ],
+            "scores": [{
+                "majority_vote": majority_vote,
+                "binanry_results": binary_results
+            }],
             "created_at": [self.now]
         }
+
 
     def main_predict(self, images: List, age_threshold: int=40) -> pd.DataFrame:
         """Loop list of images, for each, run prediction and write results to db."""
