@@ -62,9 +62,10 @@ def sentiment_detection(inputs: Inputs, parameters: Parameters) -> ResponseBody:
     """
     input_path = Path(inputs["input_dataset"].path)
     files = [str(fpath) for fpath in input_path.iterdir() if fpath.is_file()]
+    ids = [fpath.stem for fpath in input_path.iterdir() if fpath.is_file()]
 
     models = SurveyModels()
-    df_results = models.main_predict(files, age_threshold=parameters["age_threshold"])
+    df_results = models.main_predict(files, age_threshold=parameters["age_threshold"], ids=ids)
 
     return ResponseBody(
         TextResponse(

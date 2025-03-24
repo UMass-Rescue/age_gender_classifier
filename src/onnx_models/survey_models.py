@@ -5,10 +5,9 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 import logging
 import pandas as pd
-import random
 from src.onnx_models.age_classify_v001.model import predict as predict_age_classifier
 from src.onnx_models.vit_age_classifier.model import predict as predict_vit_age_classifier
 from src.onnx_models.fairface.model import predict as predict_fairface_classifier
@@ -57,7 +56,7 @@ class SurveyModels:
         if not os.path.exists(self.model3_path):
             raise FileNotFoundError(f"Model file not found: {self.model3_path}")
 
-    def predict(self, image_path):
+    def predict(self, image_path, imgId):
         """
         Run (both, third to be added) age classification models on the input image.
 
@@ -80,14 +79,14 @@ class SurveyModels:
         return  {
             "model_name": ["age_classify_v001", "vit_age_classifier", "fairface_classifier"],
             "scores": [
-                {"label": model1_label, "confidence": str(model1_confidence)},
-                {"label": model2_label, "confidence": str(model2_confidence)},
-                {"label": model2_label, "confidence": str(model2_confidence)},
+                {"label": model1_label, "confidence": str(model1_confidence), "imageId": imgId},
+                {"label": model2_label, "confidence": str(model2_confidence), "imageId": imgId},
+                {"label": model3_label, "confidence": str(model3_confidence), "imageId": imgId},
             ],
-            "created_at": [self.now, self.now]
+            "created_at": [self.now] * 3
         }
 
-    def predict_over_under(self, age, image_path):
+    def predict_over_under(self, age, image_path, imgId):
         """
         Poll all 3 models and convert their age predictions into a binary over/under classification.
         Use majority vote instead of random selection.
@@ -107,7 +106,7 @@ class SurveyModels:
         if age not in allowed_ages:
             raise ValueError(f"Invalid age threshold: {age}. Allowed values are {sorted(allowed_ages)}.")
         
-        pred = self.predict(image_path)
+        pred = self.predict(image_path, imgId)
         binary_results = {}
 
         # Count votes for each binary outcome
@@ -129,26 +128,29 @@ class SurveyModels:
             "model_name": ["predict_over_under"],
             "scores": [{
                 "majority_vote": majority_vote,
-                "binanry_results": binary_results
+                "binary_results": binary_results,
+                "imageId": imgId
             }],
             "created_at": [self.now]
         }
 
 
-    def main_predict(self, images: List, age_threshold: int=40) -> pd.DataFrame:
+    def main_predict(self, images: List, age_threshold: int=40, ids: Optional[List]=None) -> pd.DataFrame:
         """Loop list of images, for each, run prediction and write results to db."""
-        counts = 0
-        for img in images:
-            df1 = pd.DataFrame(self.predict(img))
-            df2 = pd.DataFrame(self.predict_over_under(age_threshold, img))
+        ids = list(range(len(images))) if ids is None else ids
+        ct = 0
+        for id, img in zip(ids, images):
+            df1 = pd.DataFrame(self.predict(img, id))
+            df2 = pd.DataFrame(self.predict_over_under(age_threshold, img, id))
             dfs = [df1, df2]
-
+            if ct > 0:
+                dfs = [df] + dfs
             df = pd.concat(dfs, axis=0).reset_index(drop=True)
-            df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
+            ct += 1
 
-            write_db(df, "model_output")
-            counts += 1 
-        logging.info(f" Successfully completed {len(df)} predictions for {counts} images.")
+        df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
+        write_db(df, "model_output")
+        logging.info(f" Successfully completed {len(df)} predictions for {len(images)} images.")
         return df
 
 
@@ -196,5 +198,6 @@ if __name__ == "__main__":
     df = survey.main_predict([image_path], age_threshold=40)
     df2 = read_db("model_output", "SELECT * FROM model_output")
     
-    logging.info("Current run", df)
-    logging.info("Read DB", df2.head())
+    # logging.info("Current run", df)
+    # logging.info("Read DB", df2.head())
+    # python src/onnx_models/survey_models.py src/onnx_models/test_images/lebron.jpg 40

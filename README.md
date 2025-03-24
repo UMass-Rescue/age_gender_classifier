@@ -49,6 +49,7 @@ In order to run survey_models.py you must download the onnx model files from thi
 
     cp ~/Downloads/v001_model.onnx src/onnx_models/age_classify_v001/v001_model.onnx 
     cp ~/Downloads/vit_model.onnx src/onnx_models/vit_age_classifier/vit_model.onnx
+    cp ~/Downloads/vit_model.onnx src/onnx_models/fareface/fareface_age.onnx
 
 Alternatively, you could run the `convert_to_onnx.py` files in each directory to regenerate the respective ONNX files.
 
@@ -71,10 +72,17 @@ You are good to go!
 
 ---
 
-### Start the server
-    python <TODO>
-    TODO 
-    bash entrypoint.sh
+### Start the server...
+    python src/server/server-onnx.py
+
+**... And open Rescue Box:** With the server running, register the models in the Rescue Box desktop application (`localhost:5000`), and use as inputs test images located in `src/onnx_models/test_images/`. 
+
+Results will be displayed as a JSON blob in the desktop app, and be written to a SQLite database at the project's root directory, in a table named `model_output`. Each run will generate the same `created_at` timestamp in the table (for each image and each model); to confirm results were successfully written, simply log into the venv interpreter and run the following two commands:
+
+    from src.utils.common import read_db
+    df = read_db("model_output", "select * from MODEL_OUTPUT order by created_at desc")
+    df.head()
+
 
 
 
