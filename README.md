@@ -38,7 +38,7 @@ To install or remove packages, respectively, use `poetry add` and `poetry remove
     poetry add [--dev] <package_name>
     poetry remove [--dev] <package_name>
 
-**Set environment variables:** Set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv, and define any other vars in a `.env` file; follow `.env.sample`
+**Set environment variables:** From the project root directory, set the `PYTHONPATH` environment variable to make local directories accessible for import in your venv, and define any other vars in a `.env` file; follow `.env.sample`
 
     export PYTHONPATH=$(pwd):$PYTHONPATH
     set -a; source .env; set +a
@@ -77,12 +77,12 @@ You are good to go!
 
 **... And open Rescue Box:** With the server running, register the models in the Rescue Box desktop application (`localhost:5000`), and use as inputs test images located in `src/onnx_models/test_images/`. 
 
-Results will be displayed as a JSON blob in the desktop app, and be written to a SQLite database at the project's root directory, in a table named `model_output`. Each run will generate the same `created_at` timestamp in the table (for each image and each model); to confirm results were successfully written, simply log into the venv interpreter and run the following two commands:
+Results will be displayed as a JSON blob in the desktop app, and be written to a SQLite database at the project's root directory, in a table named `model_output`. Each run will generate the same `created_at` timestamp in the table (for each image and each model).
+
+To confirm results were successfully written to the DB, simply log into a `venv` interpreter and run the following:
 
     from src.utils.common import read_db
     df = read_db("model_output", "select * from MODEL_OUTPUT order by created_at desc")
     df.head()
-
-
 
 
