@@ -1,26 +1,34 @@
 import onnxruntime as ort
 import numpy as np
+import cv2 as cv
 from PIL import Image
+from src.utils.preprocess_and_clean import enhance_image
 
 # Preprocessing function
 def preprocess_image(image_path, target_size=224):
     """
-    Preprocess the input image:
-      - Load and convert to RGB
-      - Resize to target dimensions (default 224x224)
-      - Convert to a numpy array and scale pixel values to [0, 1]
-      - Normalize using mean and std of [0.5, 0.5, 0.5] (as float32)
-      - Rearrange the array to channel-first (C, H, W) and add a batch dimension.
+    Preprocess a single image for ONNX inference:
+      - Load and convert to grayscale
+      - Enhance using your custom method (expects 48x48 input)
+      - Resize to model input size (e.g., 224x224)
+      - Normalize to [0,1] and convert to tensor format (1, 1, 224, 224)
     """
-    image = Image.open(image_path).convert("RGB")
-    image = image.resize((target_size, target_size))
-    image_np = np.array(image).astype(np.float32) / 255.0
-    mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
-    std = np.array([0.5, 0.5, 0.5], dtype=np.float32)
-    image_np = (image_np - mean) / std
-    image_np = np.transpose(image_np, (2, 0, 1))
-    image_np = np.expand_dims(image_np, axis=0)
-    return image_np
+    # Load and convert to grayscale (already 48x48 expected from cleaning)
+    image = Image.open(image_path).convert("L")
+    image_np = np.array(image, dtype=np.uint8)
+
+    # Enhance
+    enhanced = enhance_image(image_np)
+
+    # Resize to model input size
+    resized = cv.resize(enhanced, (target_size, target_size))
+
+    # Normalize and convert to tensor
+    final = resized.astype(np.float32) / 255.0
+    final = np.expand_dims(final, axis=0)  # Channel dim: (1, 224, 224)
+    final = np.expand_dims(final, axis=0)  # Batch dim: (1, 1, 224, 224)
+
+    return final
 
 # Postprocessing function
 def postprocess_output(logits):
