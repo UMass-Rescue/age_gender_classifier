@@ -31,7 +31,10 @@
     poetry config virtualenvs.in-project true
 
     poetry install
+    # If you are on Mac OS run:
     source .venv/bin/activate
+    # If you are on Windows run instead:
+    source .venv/Scripts/activate
 
 To install or remove packages, respectively, use `poetry add` and `poetry remove`.
 

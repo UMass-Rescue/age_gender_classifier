@@ -133,6 +133,83 @@ class SurveyModels:
             }],
             "created_at": [self.now]
         }
+        
+    def _predict_eval_results(self, age: int, image_path: str, imgId) -> dict:
+        """
+        Run the age prediction models once and return both the raw predictions (individual labels)
+        and the binary over/under vote result (using majority vote) for the specified age threshold.
+        
+        Args:
+            age (int): The age threshold to convert the predictions to binary.
+            image_path (str): Path to the input image.
+            imgId: An identifier for the image.
+        
+        Returns:
+            dict: A dictionary with keys:
+                - 'raw_predictions': Output of the original predict() method.
+                - 'binary_vote': A dictionary with:
+                      * 'majority_vote': The overall binary decision (True if at least 2 models are "over").
+                      * 'binary_results': A dict mapping each model name to a tuple (is_over, confidence).
+                      * 'imageId': The provided image identifier.
+                - 'created_at': The timestamp (from self.now).
+        """
+        # Run predictions only once
+        raw_predictions = self.predict(image_path, imgId)
+
+        # Initialize binary conversion and vote counting
+        binary_results = {}
+        vote_counts = {True: 0, False: 0}
+
+        for i, model_name in enumerate(raw_predictions["model_name"]):
+            # Get the raw label and confidence from predictions
+            label = raw_predictions["scores"][i]["label"]
+            confidence = raw_predictions["scores"][i]["confidence"]
+            # Convert to binary using the helper function
+            is_over = label_to_binary(label, age)
+            binary_results[model_name] = (is_over, confidence)
+            vote_counts[is_over] += 1
+
+        # Majority vote for whether the picture is over the threshold
+        majority_vote = True if vote_counts[True] >= 2 else False
+
+        # Combine both results into one output dictionary
+        return {
+            "raw_predictions": raw_predictions,
+            "binary_vote": {
+                "majority_vote": majority_vote,
+                "binary_results": binary_results,
+                "imageId": imgId
+            },
+            "created_at": raw_predictions["created_at"]
+        }
+
+    def main_predict_eval(self, images: List, age_threshold: int = 40, ids: Optional[List] = None) -> pd.DataFrame:
+        """
+        Loop over a list of images and, for each, run the combined evaluation (raw predictions plus binary vote)
+        in one pass. Returns a DataFrame with one row per image containing columns:
+          - imageId
+          - raw_predictions (as a JSON string)
+          - binary_vote (as a JSON string)
+          - created_at timestamp
+        
+        This avoids running separate/redundant predict and predict_over_under calls
+        """
+        ids = list(range(len(images))) if ids is None else ids
+        results = []
+        for imgId, img in zip(ids, images):
+            combined_result = self._predict_eval_results(age_threshold, img, imgId)
+            row = {
+                "imageId": imgId,
+                "raw_predictions": json.dumps(combined_result["raw_predictions"]),
+                "binary_vote": json.dumps(combined_result["binary_vote"]),
+                "created_at": combined_result["created_at"][0] if isinstance(combined_result["created_at"], list) else combined_result["created_at"]
+            }
+            results.append(row)
+        
+        df = pd.DataFrame(results)
+        write_db(df, "model_output")
+        logging.info(f"Successfully completed combined evaluation for {len(images)} images.")
+        return df
 
 
     def main_predict(self, images: List, age_threshold: int=40, ids: Optional[List]=None) -> pd.DataFrame:
