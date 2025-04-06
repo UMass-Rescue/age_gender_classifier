@@ -1,5 +1,7 @@
-import onnxruntime as ort, os
-import numpy as np, cv2 as cv
+import onnxruntime as ort
+import os
+import numpy as np
+import cv2 as cv
 from PIL import Image
 from src.utils.preprocess import enhance_image
 
