@@ -52,7 +52,7 @@ In order to run survey_models.py you must download the onnx model files from thi
 
     cp ~/Downloads/v001_model.onnx src/onnx_models/age_classify_v001/v001_model.onnx 
     cp ~/Downloads/vit_model.onnx src/onnx_models/vit_age_classifier/vit_model.onnx
-    cp ~/Downloads/vit_model.onnx src/onnx_models/fareface/fareface_age.onnx
+    cp ~/Downloads/fareface_age.onnx src/onnx_models/fareface/fareface_age.onnx
 
 Alternatively, you could run the `convert_to_onnx.py` files in each directory to regenerate the respective ONNX files.
 
