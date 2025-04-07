@@ -1,4 +1,5 @@
-import cv2 as cv, logging
+import cv2 as cv
+import logging
 import pandas as pd
 from src.utils.sqlAlchemy_manager import DBManager
 import numpy as np
