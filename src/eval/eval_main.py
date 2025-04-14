@@ -1,11 +1,10 @@
-from typing import Boolean
 import pandas as pd
 from src.eval.analyze_labeled_data_raw import main as raw_main
 from src.eval.score_labeled_data import main as run_evaluation
 from eval.transform_scores import main as transform_outputs
 
 
-def main(eval_table: str="age_gender_labeled", raw_plots: Boolean=False) -> pd.DataFrame:
+def main(eval_table: str="age_gender_labeled", raw_plots: bool=False) -> pd.DataFrame:
     """Orchestrate full evaluation pipeline.
     
     - Plot raw data, if raw_plots is True
