@@ -12,7 +12,7 @@ path = Path(__file__).parent
 
 def age_histogram(df: pd.DataFrame, saveFile: str="imgs/age_distribution.png") -> None:
     """"""
-    sns.histplot(data=df,x='age',kde=True)
+    sns.histplot(data=df, x='age', kde=True)
     plt.savefig(path / saveFile)
     logging.info(f" Saved histogram to {saveFile}")
 
@@ -26,9 +26,9 @@ def gender_counts(df: pd.DataFrame, saveFile: str="imgs/gender_counts.png") -> N
     logging.info(f" Saved histogram to {saveFile}")
 
 
-def main():
+def main(table: str="age_gender_labeled"):
     """Labeled data set must exist in the database."""
-    df = read_db(table_name="age_gender_labeled", query="SELECT * FROM age_gender_labeled")
+    df = read_db(table_name=table, query=f"SELECT * FROM {table}")
     age_histogram(df)
     gender_counts(df)
     

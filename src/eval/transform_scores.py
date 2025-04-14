@@ -29,10 +29,7 @@ def main(t_stamp: str) -> pd.DataFrame:
     )
     df = flatten_json_scores(df)
 
-    # TODO: further post-processing to ready for visualization
-    # gather dfs of accuracy, confidence, f1, etc
-    
-    print(df)
+    # TODO: expand metrics on predicted
 
     return df
 

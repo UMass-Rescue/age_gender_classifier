@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import List
+from typing import Tuple
 import logging
-import json
 import pandas as pd
 
 from src.utils.common import read_db
@@ -11,39 +10,26 @@ logging.basicConfig(level=logging.INFO)
 path = Path(__file__).parent
 
 
-# TODO: ======= Juhi's work =======
-def preprocess_true_pixels(pixStr: str) -> List:
-    """Preprocess the true pixels from the json blob."""
-    
-    # put code here
-    
-    img = ["preprocessing here"]
-    return img
-# =================================
-
-
-def main(mod_size: int=20) -> None:
+def main(table: str="age_gender_labeled", mod_size: int=200) -> Tuple[str, pd.DataFrame]:
     """Read subset of true data from database, preprocess, run inference against our models,
     and return a dataframe. Labeled data set must exist in the database.
+
+    Return: tuple of timestamp as str and dataframe
     """
     df = read_db(
-        table_name="age_gender_labeled",
-        query=f"SELECT id, age, pixels FROM age_gender_labeled where id % {mod_size} = 0 order by age"
+        table_name=table,
+        query=f"SELECT id, age, img_name, pixels FROM {table} where id % {mod_size} = 0 order by age limit 5"  # REMOVE LIMIT AFTER TESTING
     )
-    
-    # =================
-    # TODO @Juhi: call pre-process on labeled data, NOT file names
-    # TODO # @Jake: re-org SurveyModels to handle list of png files or list of pixel arrays
-    # =================
-    df["pixels"] = df["pixels"].apply(preprocess_true_pixels)
+
     imgs = list(df["pixels"])
-    ids = list(df["ids"])
-    logging.info(" About to run inference on true label subset...")
+    ids = list(df["img_name"])
+    logging.info(f" About to run inference on true label subset of size = {len(df)} ...")
 
     sm = SurveyModels()
-    df = sm.main_predict(imgs, age_threshold=None, ids=ids)
+    df = sm.main_predict_eval(imgs, age_threshold=20, ids=ids)
 
-    logging.info(" Completed scoring true labels, returning dataframe of expanded results")    
+    logging.info(" Completed prediction on true labels, returning timesatmp and dataframe of predicted results")
+    return sm.now, df
     
 
 if __name__ == "__main__":

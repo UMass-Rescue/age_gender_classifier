@@ -1,17 +1,28 @@
+from typing import Boolean
 import pandas as pd
 from src.eval.analyze_labeled_data_raw import main as raw_main
-from src.eval.score_labeled_data import main as process_scores
+from src.eval.score_labeled_data import main as run_evaluation
 from eval.transform_scores import main as transform_outputs
 
 
-def main() -> pd.DataFrame:
-    """Run full evaluation pipeline."""
-    # raw_main()
-    # ts = process_scores()
-    ts = "2025-03-24T20:25:56.093675" # TEST
-    df = transform_outputs(ts)
+def main(eval_table: str="age_gender_labeled", raw_plots: Boolean=False) -> pd.DataFrame:
+    """Orchestrate full evaluation pipeline.
     
+    - Plot raw data, if raw_plots is True
+    - Run eval, query true samples and run Survey models
+    - Transform outputs, extract predictions from json payload
+    - Plot predicted data
+    """
+    if raw_plots:
+        raw_main(eval_table)
+    
+    ts, df = run_evaluation()
+
+    df = transform_outputs(ts)
+
+    # TODO: endpoint for visualizations here
     # chart scores and true/predicted labels
+
     return df
 
 
