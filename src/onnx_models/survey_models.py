@@ -196,14 +196,14 @@ class SurveyModels:
         ids = list(range(len(images))) if ids is None else ids
         results = []
         for imgId, img in zip(ids, images):
-            combined_result = self._predict_eval_results(age_threshold, img, imgId)
-            row = {
-                "imageId": imgId,
-                "raw_predictions": json.dumps(combined_result["raw_predictions"]),
-                "binary_vote": json.dumps(combined_result["binary_vote"]),
-                "created_at": combined_result["created_at"][0]
-            }
-            results.append(row)
+            combined_result = self._predict_eval_results(age_threshold, img, imgId)["raw_predictions"]
+            # row = {
+            #     "imageId": imgId,
+            #     "raw_predictions": json.dumps(combined_result["raw_predictions"]),
+            #     "binary_vote": json.dumps(combined_result["binary_vote"]),
+            #     "created_at": combined_result["created_at"][0]
+            # }
+            results.append(combined_result)
         
         df = pd.DataFrame(results)
         write_db(df, "model_output")
