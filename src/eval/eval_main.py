@@ -17,7 +17,10 @@ def main(eval_table: str="age_gender_labeled", raw_plots: bool=False) -> pd.Data
     
     ts, df = run_evaluation()
 
-    df = transform_outputs(ts)
+    print("Test ..", ts)
+    print("Test ..", df.head())
+    
+    # df = transform_outputs(ts)
 
     # TODO: endpoint for visualizations here
     # chart scores and true/predicted labels

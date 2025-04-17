@@ -197,15 +197,11 @@ class SurveyModels:
         results = []
         for imgId, img in zip(ids, images):
             combined_result = self._predict_eval_results(age_threshold, img, imgId)["raw_predictions"]
-            # row = {
-            #     "imageId": imgId,
-            #     "raw_predictions": json.dumps(combined_result["raw_predictions"]),
-            #     "binary_vote": json.dumps(combined_result["binary_vote"]),
-            #     "created_at": combined_result["created_at"][0]
-            # }
-            results.append(combined_result)
+            results.append(pd.DataFrame(combined_result))
         
-        df = pd.DataFrame(results)
+        df = pd.concat(results, axis=0).reset_index(drop=True)
+        df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
+
         write_db(df, "model_output")
         logging.info(f"Successfully completed combined evaluation for {len(images)} images.")
         return df

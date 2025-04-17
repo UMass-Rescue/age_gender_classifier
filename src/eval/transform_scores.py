@@ -29,6 +29,9 @@ def main(t_stamp: str) -> pd.DataFrame:
     )
     df = flatten_json_scores(df)
 
+    df.to_csv(f"temp_output.csv", index=False)
+    print("Wrote temp file...")
+
     # TODO: expand metrics on predicted
 
     return df

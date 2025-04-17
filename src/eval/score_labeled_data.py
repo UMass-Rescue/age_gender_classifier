@@ -28,7 +28,7 @@ def main(table: str="age_gender_labeled", mod_size: int=200) -> Tuple[str, pd.Da
     sm = SurveyModels()
     df = sm.main_predict_eval(imgs, age_threshold=20, ids=ids)
 
-    logging.info(" Completed prediction on true labels, returning timesatmp and dataframe of predicted results")
+    logging.info(" Completed prediction on true labels, returning timestamp and dataframe of predicted results")
     return sm.now, df
     
 
