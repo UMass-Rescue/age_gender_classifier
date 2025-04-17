@@ -171,7 +171,6 @@ class SurveyModels:
 
         # Majority vote for whether the picture is over the threshold
         majority_vote = True if vote_counts[True] >= 2 else False
-
         # Combine both results into one output dictionary
         return {
             "raw_predictions": raw_predictions,
@@ -180,7 +179,7 @@ class SurveyModels:
                 "binary_results": binary_results,
                 "imageId": imgId
             },
-            "created_at": raw_predictions["created_at"]
+            "created_at": raw_predictions["created_at"][0]
         }
 
     def main_predict_eval(self, images: List, age_threshold: int = 40, ids: Optional[List] = None) -> pd.DataFrame:
@@ -202,7 +201,7 @@ class SurveyModels:
                 "imageId": imgId,
                 "raw_predictions": json.dumps(combined_result["raw_predictions"]),
                 "binary_vote": json.dumps(combined_result["binary_vote"]),
-                "created_at": combined_result["created_at"][0] if isinstance(combined_result["created_at"], list) else combined_result["created_at"]
+                "created_at": combined_result["created_at"][0]
             }
             results.append(row)
         

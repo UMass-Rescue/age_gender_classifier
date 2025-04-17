@@ -67,7 +67,7 @@ Your models directory structure should then look like this:
 ----convert_to_onnx.py
 ----model.py
 ----vit_model.onnx
---surey_models.py
+--surbey_models.py
 ```
 
 
