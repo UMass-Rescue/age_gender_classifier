@@ -21,7 +21,7 @@ def main(eval_table: str="age_gender_labeled", raw_plots: bool=False) -> pd.Data
 
     # TODO: endpoint for visualizations here
     # chart scores and true/predicted labels
-
+    visualize_outputs()
     return df
 
 
