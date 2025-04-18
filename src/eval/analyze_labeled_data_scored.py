@@ -18,6 +18,26 @@ AGE_CLASSES = [
     "40-49", "50-59", "60-69", "more than 70"
 ]
 
+def age_to_range(age):
+    if age <= 2:
+        return "0-2"
+    elif age <= 9:
+        return "3-9"
+    elif age <= 19:
+        return "10-19"
+    elif age <= 29:
+        return "20-29"
+    elif age <= 39:
+        return "30-39"
+    elif age <= 49:
+        return "40-49"
+    elif age <= 59:
+        return "50-59"
+    elif age <= 69:
+        return "60-69"
+    else:
+        return "more than 70"
+
 def plot_conf_matrix(y_pred, y_true, model_name):
     cm = confusion_matrix(y_true, y_pred, labels=AGE_CLASSES)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=AGE_CLASSES)
@@ -75,7 +95,7 @@ def plot_conf_heatmap(y_true, y_pred, model_name):
     plt.clf()
 
 def main():
-    df = pd.read_csv(path / "temp_output.csv")
+    df = pd.read_csv(path / "temp_output_labeled.csv")
 
     for model in ["age_classify_v001", "fairface", "vit_age_classifier"]:
         model_df = df[df["model_name"] == model]
@@ -83,7 +103,7 @@ def main():
             print(f"No data found for {model}")
             continue
 
-        y_true = model_df["true_label"].astype(str)
+        y_true = model_df["true_label"].apply(age_to_range)
         y_pred = model_df["label"]
 
         # Generate all plots
