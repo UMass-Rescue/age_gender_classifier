@@ -97,7 +97,7 @@ def plot_conf_heatmap(y_true, y_pred, model_name):
 def main():
     df = pd.read_csv(path / "temp_output_labeled.csv")
 
-    for model in ["age_classify_v001", "fairface", "vit_age_classifier"]:
+    for model in ["age_classify_v001", "fairface_classifier", "vit_age_classifier"]:
         model_df = df[df["model_name"] == model]
         if model_df.empty:
             print(f"No data found for {model}")
