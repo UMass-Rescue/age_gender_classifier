@@ -18,7 +18,7 @@ def main(table: str="age_gender_labeled", mod_size: int=200) -> Tuple[str, pd.Da
     """
     df = read_db(
         table_name=table,
-        query=f"SELECT id, age, img_name, pixels FROM {table} where id % {mod_size} = 0 order by age limit 5"  # REMOVE LIMIT AFTER TESTING
+        query=f"SELECT id, age, img_name, pixels FROM {table} where id % {mod_size} = 0 order by age"
     )
 
     imgs = list(df["pixels"])
