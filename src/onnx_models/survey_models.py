@@ -171,7 +171,6 @@ class SurveyModels:
 
         # Majority vote for whether the picture is over the threshold
         majority_vote = True if vote_counts[True] >= 2 else False
-
         # Combine both results into one output dictionary
         return {
             "raw_predictions": raw_predictions,
@@ -180,7 +179,7 @@ class SurveyModels:
                 "binary_results": binary_results,
                 "imageId": imgId
             },
-            "created_at": raw_predictions["created_at"]
+            "created_at": raw_predictions["created_at"][0]
         }
 
     def main_predict_eval(self, images: List, age_threshold: int = 40, ids: Optional[List] = None) -> pd.DataFrame:
@@ -197,16 +196,12 @@ class SurveyModels:
         ids = list(range(len(images))) if ids is None else ids
         results = []
         for imgId, img in zip(ids, images):
-            combined_result = self._predict_eval_results(age_threshold, img, imgId)
-            row = {
-                "imageId": imgId,
-                "raw_predictions": json.dumps(combined_result["raw_predictions"]),
-                "binary_vote": json.dumps(combined_result["binary_vote"]),
-                "created_at": combined_result["created_at"][0] if isinstance(combined_result["created_at"], list) else combined_result["created_at"]
-            }
-            results.append(row)
+            combined_result = self._predict_eval_results(age_threshold, img, imgId)["raw_predictions"]
+            results.append(pd.DataFrame(combined_result))
         
-        df = pd.DataFrame(results)
+        df = pd.concat(results, axis=0).reset_index(drop=True)
+        df["scores"] = df["scores"].apply(lambda x: json.dumps(x))
+
         write_db(df, "model_output")
         logging.info(f"Successfully completed combined evaluation for {len(images)} images.")
         return df
