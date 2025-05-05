@@ -2,7 +2,7 @@ import pandas as pd
 from src.eval.analyze_labeled_data_raw import main as raw_main
 from src.eval.score_labeled_data import main as run_evaluation
 from eval.transform_scores import main as transform_outputs
-
+from src.eval.analyze_labeled_data_scored import main as visualize_outputs
 
 def main(eval_table: str="age_gender_labeled", raw_plots: bool=False) -> pd.DataFrame:
     """Orchestrate full evaluation pipeline.
@@ -21,7 +21,7 @@ def main(eval_table: str="age_gender_labeled", raw_plots: bool=False) -> pd.Data
 
     # TODO: endpoint for visualizations here
     # chart scores and true/predicted labels
-
+    visualize_outputs()
     return df
 
 
