@@ -11,10 +11,24 @@ import pandas as pd
 from src.onnx_models.age_classify_v001.model import predict as predict_age_classifier
 from src.onnx_models.vit_age_classifier.model import predict as predict_vit_age_classifier
 from src.onnx_models.fairface.model import predict as predict_fairface_classifier
-
+import joblib
 from src.utils.common import write_db, read_db
 
 logging.basicConfig(level=logging.INFO)
+
+# integer codes XGBoost model was trained on
+_LABEL_MAP = {
+    "0-2": 0, "3-9": 1, "10-19": 2, "20-29": 3,
+    "30-39": 4, "40-49": 5, "50-59": 6, "60-69": 7,
+    "more than 70": 8,
+    "70-79": 8
+}
+_INT_TO_LABEL = {v: k for k, v in _LABEL_MAP.items()}
+
+def _fix(label: str) -> str:
+    return "more than 70" if label == "70-79" else label
+
+_XGB = joblib.load("src/onnx_models/xgboost_model.pkl")
 
 
 def label_to_binary(label, threshold):
@@ -109,20 +123,21 @@ class SurveyModels:
         pred = self.predict(image_path, imgId)
         binary_results = {}
 
-        # Count votes for each binary outcome
-        vote_counts = {True: 0, False: 0}
-        
-        for n in range(len(pred["model_name"])):
-            model_name = pred["model_name"][n]
-            label = pred["scores"][n]["label"]
-            conf = pred["scores"][n]["confidence"]
-            is_over = label_to_binary(label, age)
+        features = {
+            'age_classify_v001_label'     : _LABEL_MAP[_fix(pred["scores"][0]["label"])],
+            'age_classify_v001_confidence': float(pred["scores"][0]["confidence"]),
+            'vit_age_classifier_label'    : _LABEL_MAP[_fix(pred["scores"][1]["label"])],
+            'vit_age_classifier_confidence': float(pred["scores"][1]["confidence"]),
+            'fairface_classifier_label'   : _LABEL_MAP[_fix(pred["scores"][2]["label"])],
+            'fairface_classifier_confidence': float(pred["scores"][2]["confidence"])
+        }
+        ens_idx       = _XGB.predict(pd.DataFrame([features]))[0]
+        ens_label     = _INT_TO_LABEL[ens_idx]
+        ensemble_over = label_to_binary(ens_label, age)
 
-            binary_results[model_name] = (is_over, conf)
-            vote_counts[is_over] += 1
+        binary_results["xgb_ensemble"] = (ensemble_over, "1.0")
 
-        # Majority vote for whether the picture is over the threshold
-        majority_vote = True if vote_counts[True] >= 2 else False
+        majority_vote = ensemble_over
 
         return {
             "model_name": ["predict_over_under"],
